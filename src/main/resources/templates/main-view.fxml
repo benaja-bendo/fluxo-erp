@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      spacing="20" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Bienvenue sur Fluxo ERP !" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+
+    <Button text="Gérer les produits" fx:id="productButton" />
+    <Button text="Gérer les clients" fx:id="customerButton" />
+    <Button text="Voir les rapports" fx:id="reportButton" />
+</VBox>
