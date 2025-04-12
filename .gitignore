@@ -33,3 +33,7 @@ build/
 .vscode/
 
 /sdk
+
+/out
+
+/installer/*.dmg

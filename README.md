@@ -70,24 +70,55 @@ mvn javafx:run
 
 ```shell
 fluxo-erp/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/bgrfacile/fluxo/
-│   │   │       ├── controller/
-│   │   │       ├── model/
-│   │   │       ├── repository/
-│   │   │       └── service/
-│   │   └── resources/
-│   │       ├── templates/
-│   │       │   └── main-view.fxml
-│   │       └── application.yml
+├── HELP.md
+├── LICENSE
+├── README.md
+├── assets
+│   └── schema-architecture.png
+├── docs
+│   └── INSTALLER.md
+├── installer
+│   └── FluxoApp-1.0.dmg
+├── mvnw
+├── mvnw.cmd
 ├── pom.xml
-└── README.md
+├── scripts
+│   └── build.sh
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── bgrfacile
+    │   │           └── fluxo
+    │   │               ├── FluxoApplication.java
+    │   │               ├── config
+    │   │               └── controller
+    │   │                   └── MainController.java
+    │   └── resources
+    │       ├── META-INF
+    │       │   └── MANIFEST.MF
+    │       ├── application.yml
+    │       ├── icon.icns
+    │       ├── static
+    │       └── templates
+    │           └── main-view.fxml
+    └── test
+        ├── java
+        │   └── com
+        │       └── bgrfacile
+        │           └── fluxo
+        │               └── FluxoApplicationTests.java
+        └── resources
 ```
 
-## 📸 Captures d'écran
+## 🧩 Génération d'un installateur
 
+Si vous souhaitez créer un installateur `.dmg`, `.exe`, ou `.deb` pour distribuer l'application, consultez le guide détaillé ici :
+
+📦 [INSTALLER.md](docs/INSTALLER.md)
+
+## 📸 Captures d'écran
+- Logo ![logo-fluxo.png](assets/logo-fluxo.png)
 ## 📄 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus d'informations.
