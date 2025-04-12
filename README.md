@@ -42,6 +42,7 @@ commerciale, offrant une solution complète et intuitive.
 
 - Java 21 installé sur votre machine
 - Maven installé
+  - Télécharger javafx-jmods et javafx-sdk à mettre les dossiers unzip dans le dosiers /sdk à la racine de ce projet
 
 ### Étapes
 
@@ -78,7 +79,7 @@ fluxo-erp/
 ├── docs
 │   └── INSTALLER.md
 ├── installer
-│   └── FluxoApp-1.0.dmg
+│   └── .gitkeep
 ├── mvnw
 ├── mvnw.cmd
 ├── pom.xml
