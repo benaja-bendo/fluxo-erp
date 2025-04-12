@@ -13,7 +13,6 @@ jpackage \
   --input target \
   --name FluxoApp \
   --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-  --main-class com.bgrfacile.fluxo.FluxoApplication \
   --type dmg \
   --dest installer/ \
   --icon src/main/resources/icon.icns \
