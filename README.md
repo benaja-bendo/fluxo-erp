@@ -42,7 +42,8 @@ commerciale, offrant une solution complète et intuitive.
 
 - Java 21 installé sur votre machine
 - Maven installé
-  - Télécharger javafx-jmods et javafx-sdk à mettre les dossiers unzip dans le dosiers /sdk à la racine de ce projet
+- Télécharger/Dézipper les bons SDK et jmods à mettre dans le dossiers `/sdk` sur le [site](https://gluonhq.com/products/javafx/)
+
 
 ### Étapes
 
