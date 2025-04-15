@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION=17.0.14
+          FX_VERSION=21.0.2
           FX_URL=https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_${RUNNER_OS}-x64_bin-jmods.zip
           wget $FX_URL
           unzip openjfx-${FX_VERSION}_*.zip
@@ -71,7 +71,6 @@ jobs:
           path: |
             installer/**/*.${{ matrix.installer-type }}
             target/Fluxo-*.jar
-
 
   create-release:
     name: Create Release
