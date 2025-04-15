@@ -124,8 +124,13 @@ Si vous souhaitez créer un installateur `.dmg`, `.exe`, ou `.deb` pour distribu
 
 📦 [INSTALLER.md](docs/INSTALLER.md)
 
+## Tags de release
+
+- v0.1.0-alpha.1
+
 ## 📸 Captures d'écran
 - Logo ![logo-fluxo.png](assets/logo-fluxo.png)
+
 ## 📄 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus d'informations.
