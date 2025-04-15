@@ -4,6 +4,8 @@ Fluxo ERP est une application de bureau moderne combinant JavaFX pour l'interfac
 logique métier et la persistance des données. Elle est conçue pour répondre aux besoins des PME en matière de gestion
 commerciale, offrant une solution complète et intuitive.
 
+![Build Status](https://github.com/benaja-bendo/fluxo-erp/actions/workflows/release.yml/badge.svg)
+
 ## 🚀 Fonctionnalités principales
 
 - Gestion des produits
@@ -43,6 +45,9 @@ commerciale, offrant une solution complète et intuitive.
 - Java 21 installé sur votre machine
 - Maven installé
 - Télécharger/Dézipper les bons SDK et jmods à mettre dans le dossiers `/sdk` sur le [site](https://gluonhq.com/products/javafx/)
+  - openjfx-17.0.14_osx-aarch64_bin-jmods.zip
+  - openjfx-17.0.14_osx-aarch64_bin-sdk.zip
+  - openjfx-17.0.15_windows-x64_bin-jmods.zip
 
 
 ### Étapes
