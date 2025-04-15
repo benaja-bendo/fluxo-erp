@@ -35,14 +35,16 @@ jobs:
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
           dir openjfx*
           # Vérifier où se trouvent les modules
-          dir openjfx*/javafx-jmods-*/
+          $JMODS_PATH = (Get-ChildItem -Path "openjfx*/javafx-jmods-*" -Directory).FullName
+          Write-Host "JavaFX modules path: $JMODS_PATH"
+          dir $JMODS_PATH
 
       - name: Create Windows installer
         run: |
           # Trouver le chemin correct des modules JavaFX
           $JMODS_PATH = (Get-ChildItem -Path "openjfx*/javafx-jmods-*" -Directory).FullName
           Write-Host "JavaFX modules path: $JMODS_PATH"
-          
+
           jpackage `
             --input target `
             --name FluxoApp `
