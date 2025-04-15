@@ -12,6 +12,8 @@ jobs:
   build-windows:
     name: Build and Package for Windows
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -42,10 +44,10 @@ jobs:
         run: |
           $JMODS_PATH = "D:\a\fluxo-erp\fluxo-erp\javafx-jmods-21.0.2"
           Write-Host "JavaFX modules path: $JMODS_PATH"
-          
+
           # Liste le contenu du dossier JavaFX pour vérification
           Get-ChildItem "$JMODS_PATH"
-          
+
           jpackage `
             --input target `
             --name FluxoApp `
