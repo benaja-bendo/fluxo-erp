@@ -1,4 +1,4 @@
-name: Release Build
+name: Windows Release Build
 
 on:
   push:
@@ -7,25 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build and Package
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - os: macos-latest
-            installer-type: dmg
-            icon: src/main/resources/assets/icones/mac/icon.icns
-            jpackage-args: --dest installer/mac
-          - os: windows-latest
-            installer-type: msi
-            icon: src/main/resources/assets/icones/win/icon.ico
-            jpackage-args: --win-console --dest installer/win
-          - os: ubuntu-latest
-            installer-type: deb
-            icon: src/main/resources/assets/icones/linux/icon_512x512x32.png
-            jpackage-args: --dest installer/linux
+  build-windows:
+    name: Build and Package for Windows
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -40,48 +24,30 @@ jobs:
       - name: Build with Maven
         run: mvn -B clean package
 
-      - name: Install WiX (Windows only)
-        if: matrix.os == 'windows-latest'
+      - name: Install WiX
         run: choco install wixtoolset -y
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION=21.0.2
-          FX_URL=https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_${RUNNER_OS}-x64_bin-jmods.zip
-          wget $FX_URL
-          unzip openjfx-${FX_VERSION}_*.zip
+          $FX_VERSION="21.0.2"
+          $FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_windows-x64_bin-jmods.zip"
+          Invoke-WebRequest -Uri $FX_URL -OutFile "openjfx.zip"
+          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
 
-      - name: Create installer
+      - name: Create Windows installer
         run: |
-          jpackage \
-            --input target \
-            --name FluxoApp \
-            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-            --type ${{ matrix.installer-type }} \
-            --icon ${{ matrix.icon }} \
-            --module-path openjfx-jmods \
-            --add-modules javafx.controls,javafx.fxml \
-            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
-            ${{ matrix.jpackage-args }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Installer-${{ matrix.os }}
-          path: |
-            installer/**/*.${{ matrix.installer-type }}
-            target/Fluxo-*.jar
-
-  create-release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+          jpackage `
+            --input target `
+            --name FluxoApp `
+            --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
+            --type msi `
+            --icon src/main/resources/assets/icones/win/icon.ico `
+            --module-path openjfx-jmods `
+            --add-modules javafx.controls,javafx.fxml `
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
+            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
+            --win-console `
+            --dest installer/win
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -89,9 +55,7 @@ jobs:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
           body: |
-            Installers multi-plateformes pour FluxoApp
-            - MacOS (.dmg)
-            - Windows (.msi)
-            - Linux (.deb)
+            Installer Windows pour FluxoApp
           files: |
-            artifacts/Installer-*/FluxoApp-*.*
+            installer/win/*.msi
+            target/Fluxo-*.jar
