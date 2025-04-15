@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -35,16 +33,23 @@ jobs:
           $FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_windows-x64_bin-jmods.zip"
           Invoke-WebRequest -Uri $FX_URL -OutFile "openjfx.zip"
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
+          dir openjfx*
+          # Vérifier où se trouvent les modules
+          dir openjfx*/javafx-jmods-*/
 
       - name: Create Windows installer
         run: |
+          # Trouver le chemin correct des modules JavaFX
+          $JMODS_PATH = (Get-ChildItem -Path "openjfx*/javafx-jmods-*" -Directory).FullName
+          Write-Host "JavaFX modules path: $JMODS_PATH"
+          
           jpackage `
             --input target `
             --name FluxoApp `
             --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
             --type msi `
             --icon src/main/resources/assets/icones/win/icon.ico `
-            --module-path openjfx-jmods `
+            --module-path "$JMODS_PATH" `
             --add-modules javafx.controls,javafx.fxml `
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
             --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
