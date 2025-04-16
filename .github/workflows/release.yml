@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-#    branches:
-#      - main
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -85,7 +85,18 @@ jobs:
           unzip openjfx.zip
           ls -la
 
-      - name: Create macOS installer
+      - name: Créer un trousseau temporaire et importer le certificat
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > temp.p12
+          security create-keychain -p "$MACOS_CERTIFICATE_PASSWORD" temp.keychain
+          security unlock-keychain -p "$MACOS_CERTIFICATE_PASSWORD" temp.keychain
+          security import temp.p12 -k temp.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security find-identity -v -p codesigning temp.keychain
+          IDENTITY=$(security find-identity -v -p codesigning temp.keychain | grep " 1 valid identities found" -A 1 | tail -n 1 | awk '{print $2}')
+          echo "MACOS_SIGNING_IDENTITY_TEMP=$IDENTITY" >> $GITHUB_ENV
+          rm temp.p12
+
+      - name: Create macOS installer and sign
         run: |
           JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
           echo "JavaFX modules path: $JMODS_PATH"
@@ -105,8 +116,13 @@ jobs:
             --mac-package-identifier "com.bgrfacile.fluxo" \
             --mac-package-name "FluxoApp" \
             --mac-sign \
-            --mac-signing-key-user-name "Benaja Bendo (82OTY)"
+            --mac-signing-key-user-name "$MACOS_SIGNING_IDENTITY_TEMP" \
+            --keychain temp.keychain \
             --dest installer/mac
+
+      - name: Supprimer le trousseau temporaire
+        if: always()
+        run: security delete-keychain temp.keychain
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
