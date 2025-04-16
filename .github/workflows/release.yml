@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
@@ -68,10 +68,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
-          java-version: 21
+          java-version: 17
           distribution: 'temurin'
 
       - name: Build with Maven
@@ -79,7 +79,7 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION="21.0.2"
+          FX_VERSION="17.0.14"
           FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-aarch64_bin-jmods.zip"
           curl -L -o openjfx.zip $FX_URL
           unzip openjfx.zip
@@ -87,7 +87,7 @@ jobs:
 
       - name: Create macOS installer
         run: |
-          JMODS_PATH="$(pwd)/javafx-jmods-21.0.2"
+          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
           echo "JavaFX modules path: $JMODS_PATH"
           
           jpackage \
@@ -103,7 +103,7 @@ jobs:
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
             --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
             --mac-package-identifier "com.bgrfacile.fluxo" \
-            --mac-package-name "Fluxo" \
+            --mac-package-name "FluxoApp" \
             --dest installer/mac
 
       - name: Upload DMG Artifact
