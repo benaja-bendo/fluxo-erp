@@ -31,14 +31,14 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          $FX_VERSION="21.0.2"
+          $FX_VERSION="17.0.14"
           $FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_windows-x64_bin-jmods.zip"
           Invoke-WebRequest -Uri $FX_URL -OutFile "openjfx.zip"
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
 
       - name: Create Windows installer
         run: |
-          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-21.0.2"
+          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
           Write-Host "JavaFX modules path: $JMODS_PATH"
           
           jpackage `
@@ -68,10 +68,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
 
       - name: Build with Maven
@@ -131,7 +131,7 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION="21.0.2"
+          FX_VERSION="17.0.14"
           FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
           wget $FX_URL -O openjfx.zip
           unzip openjfx.zip
@@ -139,7 +139,7 @@ jobs:
 
       - name: Create Linux installer
         run: |
-          JMODS_PATH="$(pwd)/javafx-jmods-21.0.2"
+          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
           echo "JavaFX modules path: $JMODS_PATH"
           
           jpackage \
