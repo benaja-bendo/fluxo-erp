@@ -10,10 +10,8 @@ on:
 
 jobs:
   build-windows:
-    name: Build and Package for Windows
+    name: Build Windows MSI
     runs-on: windows-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout code
@@ -37,23 +35,18 @@ jobs:
           $FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_windows-x64_bin-jmods.zip"
           Invoke-WebRequest -Uri $FX_URL -OutFile "openjfx.zip"
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
-          dir
-          dir javafx-jmods-*
 
       - name: Create Windows installer
         run: |
           $JMODS_PATH = "D:\a\fluxo-erp\fluxo-erp\javafx-jmods-21.0.2"
           Write-Host "JavaFX modules path: $JMODS_PATH"
-
-          # Liste le contenu du dossier JavaFX pour vérification
-          Get-ChildItem "$JMODS_PATH"
-
+          
           jpackage `
             --input target `
             --name FluxoApp `
             --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
             --type msi `
-            --icon src/main/resources/assets/icones/win/icon.ico `
+            --icon src/main/resources/icons/win/icon.ico `
             --module-path "$JMODS_PATH" `
             --add-modules javafx.controls,javafx.fxml `
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
@@ -61,7 +54,40 @@ jobs:
             --win-console `
             --dest installer/win
 
-      - name: Create Release
+      - name: Upload MSI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Installer
+          path: installer/win/*.msi
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-JAR
+          path: target/Fluxo-*.jar
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download MSI Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: Windows-Installer
+          path: installer
+
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: App-JAR
+          path: jar
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref }}
@@ -69,5 +95,7 @@ jobs:
           body: |
             Installer Windows pour FluxoApp
           files: |
-            installer/win/*.msi
-            target/Fluxo-*.jar
+            installer/*.msi
+            jar/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
