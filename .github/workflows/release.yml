@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
@@ -112,7 +112,6 @@ jobs:
             --input target \
             --name FluxoApp \
             --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-            --main-class com.bgrfacile.fluxo.FluxoApplication \
             --type dmg \
             --icon src/main/resources/icons/mac/icon.icns \
             --module-path "$JMODS_PATH" \
