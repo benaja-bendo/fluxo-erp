@@ -104,6 +104,8 @@ jobs:
             --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
             --mac-package-identifier "com.bgrfacile.fluxo" \
             --mac-package-name "FluxoApp" \
+            --mac-sign \
+            --mac-signing-key-user-name "Benaja Bendo (82OTY)"
             --dest installer/mac
 
       - name: Upload DMG Artifact
