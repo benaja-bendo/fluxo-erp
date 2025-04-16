@@ -1,4 +1,4 @@
-name: Windows Release Build
+name: Multi-Platform Release Build
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Create Windows installer
         run: |
-          $JMODS_PATH = "D:\a\fluxo-erp\fluxo-erp\javafx-jmods-21.0.2"
+          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-21.0.2"
           Write-Host "JavaFX modules path: $JMODS_PATH"
           
           jpackage `
@@ -60,32 +60,132 @@ jobs:
           name: Windows-Installer
           path: installer/win/*.msi
 
-      - name: Upload JAR Artifact
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn -B clean package
+
+      - name: Setup JavaFX modules
+        run: |
+          FX_VERSION="21.0.2"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-x64_bin-jmods.zip"
+          curl -L -o openjfx.zip $FX_URL
+          unzip openjfx.zip
+          ls -la
+
+      - name: Create macOS installer
+        run: |
+          JMODS_PATH="$(pwd)/javafx-jmods-21.0.2"
+          echo "JavaFX modules path: $JMODS_PATH"
+          
+          jpackage \
+            --input target \
+            --name FluxoApp \
+            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+            --type dmg \
+            --icon src/main/resources/icons/mac/icon.icns \
+            --module-path "$JMODS_PATH" \
+            --add-modules javafx.controls,javafx.fxml \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+            --dest installer/mac
+
+      - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: App-JAR
-          path: target/Fluxo-*.jar
+          name: macOS-Installer
+          path: installer/mac/*.dmg
+
+  build-linux:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn -B clean package
+
+      - name: Setup JavaFX modules
+        run: |
+          FX_VERSION="21.0.2"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
+          wget $FX_URL -O openjfx.zip
+          unzip openjfx.zip
+          ls -la
+
+      - name: Create Linux installer
+        run: |
+          JMODS_PATH="$(pwd)/javafx-jmods-21.0.2"
+          echo "JavaFX modules path: $JMODS_PATH"
+          
+          jpackage \
+            --input target \
+            --name FluxoApp \
+            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+            --type deb \
+            --icon src/main/resources/icons/linux/icon_512x512x32.png \
+            --module-path "$JMODS_PATH" \
+            --add-modules javafx.controls,javafx.fxml \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+            --dest installer/linux
+
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-Installer
+          path: installer/linux/*.deb
 
   create-release:
     name: Create GitHub Release
-    needs: build-windows
+    needs: [build-windows, build-macos, build-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Download MSI Installer
+      - name: Download Windows Installer
         uses: actions/download-artifact@v4
         with:
           name: Windows-Installer
-          path: installer
+          path: installer/windows
 
-      - name: Download JAR
+      - name: Download macOS Installer
         uses: actions/download-artifact@v4
         with:
-          name: App-JAR
-          path: jar
+          name: macOS-Installer
+          path: installer/macos
+
+      - name: Download Linux Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: Linux-Installer
+          path: installer/linux
+
+      - name: List all installers
+        run: |
+          ls -R installer/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -93,9 +193,15 @@ jobs:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
           body: |
-            Installer Windows pour FluxoApp
+            # FluxoApp ${{ github.ref_name }}
+            
+            ## Installers
+            - Windows (.msi)
+            - macOS (.dmg)
+            - Linux (.deb)
           files: |
-            installer/*.msi
-            jar/*.jar
+            installer/windows/*.msi
+            installer/macos/*.dmg
+            installer/linux/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
