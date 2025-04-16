@@ -80,7 +80,7 @@ jobs:
       - name: Setup JavaFX modules
         run: |
           FX_VERSION="21.0.2"
-          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-x64_bin-jmods.zip"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-aarch64_bin-jmods.zip"
           curl -L -o openjfx.zip $FX_URL
           unzip openjfx.zip
           ls -la
@@ -94,12 +94,16 @@ jobs:
             --input target \
             --name FluxoApp \
             --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+            --main-class com.bgrfacile.fluxo.FluxoApplication \
             --type dmg \
             --icon src/main/resources/icons/mac/icon.icns \
             --module-path "$JMODS_PATH" \
             --add-modules javafx.controls,javafx.fxml \
+            --java-options "-Dglass.platform=mac" \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
             --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+            --mac-package-identifier "com.bgrfacile.fluxo" \
+            --mac-package-name "Fluxo" \
             --dest installer/mac
 
       - name: Upload DMG Artifact
