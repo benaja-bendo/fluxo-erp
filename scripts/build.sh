@@ -12,19 +12,19 @@ case "$(uname -s)" in
         OS="MAC"
         INSTALLER_TYPE="dmg"
         ICON="src/main/resources/icons/mac/icon.icns"
-        FX_MODS="sdk/javafx-jmods-17.0.14"
+        FX_MODS="sdk/javafx-jmods-21.0.7"
         ;;
     Linux*)
         OS="LINUX"
         INSTALLER_TYPE="deb"
         ICON="src/main/resources/icons/linux/icon_512x512x32.png"
-        FX_MODS="sdk/javafx-jmods-17.0.14"
+        FX_MODS="sdk/javafx-jmods-21.0.7"
         ;;
     CYGWIN*|MINGW32*|MSYS*|MINGW*)
         OS="WINDOWS"
         INSTALLER_TYPE="msi"
         ICON="src/main/resources/icons/win/icon.ico"
-        FX_MODS="sdk/javafx-jmods-17.0.14"
+        FX_MODS="sdk/javafx-jmods-21.0.7"
         ;;
     *)
         echo "OS non supporté"
