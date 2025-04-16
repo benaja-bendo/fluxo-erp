@@ -9,60 +9,62 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    name: Build Windows MSI
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Build with Maven
-        run: mvn -B clean package
-
-      - name: Install WiX
-        run: choco install wixtoolset -y
-
-      - name: Setup JavaFX modules
-        run: |
-          $FX_VERSION="17.0.14"
-          $FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_windows-x64_bin-jmods.zip"
-          Invoke-WebRequest -Uri $FX_URL -OutFile "openjfx.zip"
-          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
-
-      - name: Create Windows installer
-        run: |
-          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
-          Write-Host "JavaFX modules path: $JMODS_PATH"
-          
-          jpackage `
-            --input target `
-            --name FluxoApp `
-            --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
-            --type msi `
-            --icon src/main/resources/icons/win/icon.ico `
-            --module-path "$JMODS_PATH" `
-            --add-modules javafx.controls,javafx.fxml `
-            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
-            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
-            --win-console `
-            --dest installer/win
-
-      - name: Upload MSI Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Windows-Installer
-          path: installer/win/*.msi
+  #  build-windows:
+  #    name: Build Windows MSI
+  #    runs-on: windows-latest
+  #
+  #    steps:
+  #      - name: Checkout code
+  #        uses: actions/checkout@v4
+  #
+  #      - name: Set up Java 21
+  #        uses: actions/setup-java@v3
+  #        with:
+  #          java-version: 21
+  #          distribution: 'temurin'
+  #
+  #      - name: Build with Maven
+  #        run: mvn -B clean package
+  #
+  #      - name: Install WiX
+  #        run: choco install wixtoolset -y
+  #
+  #      - name: Setup JavaFX modules
+  #        run: |
+  #          $env:FX_VERSION="17.0.14"
+  #          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION`_windows-x64_bin-jmods.zip"
+  #          Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
+  #          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
+  #
+  #      - name: Create Windows installer
+  #        run: |
+  #          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
+  #
+  #          jpackage `
+  #            --input target `
+  #            --name FluxoApp `
+  #            --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
+  #            --type msi `
+  #            --icon src/main/resources/icons/win/icon.ico `
+  #            --module-path "$JMODS_PATH" `
+  #            --add-modules javafx.controls,javafx.fxml `
+  #            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
+  #            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
+  #            --win-console `
+  #            --dest installer/win
+  #
+  #      - name: Upload MSI Artifact
+  #        uses: actions/upload-artifact@v4
+  #        with:
+  #          name: Windows-Installer
+  #          path: installer/win/*.msi
 
   build-macos:
     name: Build macOS DMG
     runs-on: macos-latest
+    env:
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -80,31 +82,32 @@ jobs:
       - name: Setup JavaFX modules
         run: |
           FX_VERSION="17.0.14"
-          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-aarch64_bin-jmods.zip"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-x64_bin-jmods.zip"
           curl -L -o openjfx.zip $FX_URL
           unzip openjfx.zip
-          ls -la
 
-      - name: Afficher le contenu décodé (DEBUG)
+      - name: Import certificate and create keychain
+        if: env.MACOS_CERTIFICATE != ''
         run: |
-          echo "$MACOS_CERTIFICATE" | base64 --decode | head -n 10 # Affiche les 10 premières lignes
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p keychain-password build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p keychain-password build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k keychain-password build.keychain
+          IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "1)" | awk -F '"' '{print $2}')
+          echo "MACOS_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+          rm certificate.p12
 
-      - name: Créer un trousseau temporaire et importer le certificat
-        run: |
-          echo "$MACOS_CERTIFICATE" | base64 --decode > temp.p12
-          security create-keychain -p "$MACOS_CERTIFICATE_PASSWORD" temp.keychain
-          security unlock-keychain -p "$MACOS_CERTIFICATE_PASSWORD" temp.keychain
-          security import temp.p12 -k temp.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security find-identity -v -p codesigning temp.keychain
-          IDENTITY=$(security find-identity -v -p codesigning temp.keychain | grep " 1 valid identities found" -A 1 | tail -n 1 | awk '{print $2}')
-          echo "MACOS_SIGNING_IDENTITY_TEMP=$IDENTITY" >> $GITHUB_ENV
-          rm temp.p12
-
-      - name: Create macOS installer and sign
+      - name: Create macOS installer
         run: |
           JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
-          echo "JavaFX modules path: $JMODS_PATH"
-  
+          
+          SIGN_OPTIONS=""
+          if [ -n "$MACOS_CERTIFICATE" ]; then
+            SIGN_OPTIONS="--mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
+          fi
+          
           jpackage \
             --input target \
             --name FluxoApp \
@@ -114,19 +117,12 @@ jobs:
             --icon src/main/resources/icons/mac/icon.icns \
             --module-path "$JMODS_PATH" \
             --add-modules javafx.controls,javafx.fxml \
-            --java-options "-Dglass.platform=mac" \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
             --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
             --mac-package-identifier "com.bgrfacile.fluxo" \
             --mac-package-name "FluxoApp" \
-            --mac-sign \
-            --mac-signing-key-user-name "$MACOS_SIGNING_IDENTITY_TEMP" \
-            --keychain temp.keychain \
+            $SIGN_OPTIONS \
             --dest installer/mac
-
-      - name: Supprimer le trousseau temporaire
-        if: always()
-        run: security delete-keychain temp.keychain
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
@@ -134,57 +130,56 @@ jobs:
           name: macOS-Installer
           path: installer/mac/*.dmg
 
-  build-linux:
-    name: Build Linux DEB
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Build with Maven
-        run: mvn -B clean package
-
-      - name: Setup JavaFX modules
-        run: |
-          FX_VERSION="17.0.14"
-          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
-          wget $FX_URL -O openjfx.zip
-          unzip openjfx.zip
-          ls -la
-
-      - name: Create Linux installer
-        run: |
-          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
-          echo "JavaFX modules path: $JMODS_PATH"
-          
-          jpackage \
-            --input target \
-            --name FluxoApp \
-            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-            --type deb \
-            --icon src/main/resources/icons/linux/icon_512x512x32.png \
-            --module-path "$JMODS_PATH" \
-            --add-modules javafx.controls,javafx.fxml \
-            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
-            --dest installer/linux
-
-      - name: Upload DEB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Linux-Installer
-          path: installer/linux/*.deb
+  #  build-linux:
+  #    name: Build Linux DEB
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #      - name: Checkout code
+  #        uses: actions/checkout@v4
+  #
+  #      - name: Set up Java 21
+  #        uses: actions/setup-java@v3
+  #        with:
+  #          java-version: 21
+  #          distribution: 'temurin'
+  #
+  #      - name: Build with Maven
+  #        run: mvn -B clean package
+  #
+  #      - name: Setup JavaFX modules
+  #        run: |
+  #          FX_VERSION="17.0.14"
+  #          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
+  #          wget $FX_URL -O openjfx.zip
+  #          unzip openjfx.zip
+  #
+  #      - name: Create Linux installer
+  #        run: |
+  #          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
+  #
+  #          jpackage \
+  #            --input target \
+  #            --name FluxoApp \
+  #            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+  #            --type deb \
+  #            --icon src/main/resources/icons/linux/icon_512x512x32.png \
+  #            --module-path "$JMODS_PATH" \
+  #            --add-modules javafx.controls,javafx.fxml \
+  #            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+  #            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+  #            --dest installer/linux
+  #
+  #      - name: Upload DEB Artifact
+  #        uses: actions/upload-artifact@v4
+  #        with:
+  #          name: Linux-Installer
+  #          path: installer/linux/*.deb
 
   create-release:
     name: Create GitHub Release
-    needs: [build-windows, build-macos, build-linux]
+    #    needs: [build-windows, build-macos, build-linux]
+    needs: [ build-macos ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -209,22 +204,9 @@ jobs:
           name: Linux-Installer
           path: installer/linux
 
-      - name: List all installers
-        run: |
-          ls -R installer/
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref_name }}
-          body: |
-            # FluxoApp ${{ github.ref_name }}
-            
-            ## Installers
-            - Windows (.msi)
-            - macOS (.dmg)
-            - Linux (.deb)
           files: |
             installer/windows/*.msi
             installer/macos/*.dmg
