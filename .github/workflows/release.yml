@@ -9,55 +9,55 @@ on:
   workflow_dispatch:
 
 jobs:
-  #  build-windows:
-  #    name: Build Windows MSI
-  #    runs-on: windows-latest
-  #
-  #    steps:
-  #      - name: Checkout code
-  #        uses: actions/checkout@v4
-  #
-  #      - name: Set up Java 21
-  #        uses: actions/setup-java@v3
-  #        with:
-  #          java-version: 21
-  #          distribution: 'temurin'
-  #
-  #      - name: Build with Maven
-  #        run: mvn -B clean package
-  #
-  #      - name: Install WiX
-  #        run: choco install wixtoolset -y
-  #
-  #      - name: Setup JavaFX modules
-  #        run: |
-  #          $env:FX_VERSION="17.0.14"
-  #          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION`_windows-x64_bin-jmods.zip"
-  #          Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
-  #          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
-  #
-  #      - name: Create Windows installer
-  #        run: |
-  #          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
-  #
-  #          jpackage `
-  #            --input target `
-  #            --name FluxoApp `
-  #            --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
-  #            --type msi `
-  #            --icon src/main/resources/icons/win/icon.ico `
-  #            --module-path "$JMODS_PATH" `
-  #            --add-modules javafx.controls,javafx.fxml `
-  #            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
-  #            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
-  #            --win-console `
-  #            --dest installer/win
-  #
-  #      - name: Upload MSI Artifact
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: Windows-Installer
-  #          path: installer/win/*.msi
+  build-windows:
+    name: Build Windows MSI
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn -B clean package
+
+      - name: Install WiX
+        run: choco install wixtoolset -y
+
+      - name: Setup JavaFX modules
+        run: |
+          $env:FX_VERSION="17.0.14"
+          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION`_windows-x64_bin-jmods.zip"
+          Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
+          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
+
+      - name: Create Windows installer
+        run: |
+          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
+          
+          jpackage `
+            --input target `
+            --name FluxoApp `
+            --main-jar Fluxo-0.0.1-SNAPSHOT.jar `
+            --type msi `
+            --icon src/main/resources/icons/win/icon.ico `
+            --module-path "$JMODS_PATH" `
+            --add-modules javafx.controls,javafx.fxml `
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" `
+            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" `
+            --win-console `
+            --dest installer/win
+
+      - name: Upload MSI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Installer
+          path: installer/win/*.msi
 
   build-macos:
     name: Build macOS DMG
@@ -130,67 +130,67 @@ jobs:
           name: macOS-Installer
           path: installer/mac/*.dmg
 
-  #  build-linux:
-  #    name: Build Linux DEB
-  #    runs-on: ubuntu-latest
-  #
-  #    steps:
-  #      - name: Checkout code
-  #        uses: actions/checkout@v4
-  #
-  #      - name: Set up Java 21
-  #        uses: actions/setup-java@v3
-  #        with:
-  #          java-version: 21
-  #          distribution: 'temurin'
-  #
-  #      - name: Build with Maven
-  #        run: mvn -B clean package
-  #
-  #      - name: Setup JavaFX modules
-  #        run: |
-  #          FX_VERSION="17.0.14"
-  #          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
-  #          wget $FX_URL -O openjfx.zip
-  #          unzip openjfx.zip
-  #
-  #      - name: Create Linux installer
-  #        run: |
-  #          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
-  #
-  #          jpackage \
-  #            --input target \
-  #            --name FluxoApp \
-  #            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-  #            --type deb \
-  #            --icon src/main/resources/icons/linux/icon_512x512x32.png \
-  #            --module-path "$JMODS_PATH" \
-  #            --add-modules javafx.controls,javafx.fxml \
-  #            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-  #            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
-  #            --dest installer/linux
-  #
-  #      - name: Upload DEB Artifact
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: Linux-Installer
-  #          path: installer/linux/*.deb
+  build-linux:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn -B clean package
+
+      - name: Setup JavaFX modules
+        run: |
+          FX_VERSION="17.0.14"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
+          wget $FX_URL -O openjfx.zip
+          unzip openjfx.zip
+
+      - name: Create Linux installer
+        run: |
+          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
+          
+          jpackage \
+            --input target \
+            --name FluxoApp \
+            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+            --type deb \
+            --icon src/main/resources/icons/linux/icon_512x512x32.png \
+            --module-path "$JMODS_PATH" \
+            --add-modules javafx.controls,javafx.fxml \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+            --dest installer/linux
+
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-Installer
+          path: installer/linux/*.deb
 
   create-release:
     name: Create GitHub Release
-    #    needs: [build-windows, build-macos, build-linux]
-    needs: [ build-macos ]
+    needs: [ build-windows, build-macos, build-linux ]
+    #    needs: [ build-macos ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-#      - name: Download Windows Installer
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: Windows-Installer
-#          path: installer/windows
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: Windows-Installer
+          path: installer/windows
 
       - name: Download macOS Installer
         uses: actions/download-artifact@v4
@@ -198,18 +198,18 @@ jobs:
           name: macOS-Installer
           path: installer/macos
 
-#      - name: Download Linux Installer
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: Linux-Installer
-#          path: installer/linux
+      - name: Download Linux Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: Linux-Installer
+          path: installer/linux
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-#            installer/windows/*.msi
+            installer/windows/*.msi
             installer/macos/*.dmg
-#            installer/linux/*.deb
+            installer/linux/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
