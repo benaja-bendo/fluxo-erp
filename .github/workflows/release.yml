@@ -85,6 +85,10 @@ jobs:
           unzip openjfx.zip
           ls -la
 
+      - name: Afficher le contenu décodé (DEBUG)
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode | head -n 10 # Affiche les 10 premières lignes
+
       - name: Créer un trousseau temporaire et importer le certificat
         run: |
           echo "$MACOS_CERTIFICATE" | base64 --decode > temp.p12
@@ -100,7 +104,7 @@ jobs:
         run: |
           JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
           echo "JavaFX modules path: $JMODS_PATH"
-          
+  
           jpackage \
             --input target \
             --name FluxoApp \
