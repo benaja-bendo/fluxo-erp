@@ -11,19 +11,19 @@ case "$(uname -s)" in
     Darwin*)
         OS="MAC"
         INSTALLER_TYPE="dmg"
-        ICON="src/main/resources/assets/icones/mac/icon.icns"
+        ICON="src/main/resources/icons/mac/icon.icns"
         FX_MODS="sdk/javafx-jmods-17.0.14"
         ;;
     Linux*)
         OS="LINUX"
         INSTALLER_TYPE="deb"
-        ICON="src/main/resources/assets/icones/linux/icon_512x512x32.png"
+        ICON="src/main/resources/icons/linux/icon_512x512x32.png"
         FX_MODS="sdk/javafx-jmods-17.0.14"
         ;;
     CYGWIN*|MINGW32*|MSYS*|MINGW*)
         OS="WINDOWS"
         INSTALLER_TYPE="msi"
-        ICON="src/main/resources/assets/icones/win/icon.ico"
+        ICON="src/main/resources/icons/win/icon.ico"
         FX_MODS="sdk/javafx-jmods-17.0.14"
         ;;
     *)
