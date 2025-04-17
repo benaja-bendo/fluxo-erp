@@ -32,7 +32,8 @@ jobs:
       - name: Setup JavaFX modules
         run: |
           $env:FX_VERSION="21.0.7"
-          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION`_windows-x64_bin-jmods.zip"
+          # Supprimer le backtick avant l'underscore
+          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION_windows-x64_bin-jmods.zip"
           Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
 
@@ -83,7 +84,21 @@ jobs:
         run: |
           FX_VERSION="21.0.7"
           FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_macos-x64_bin-jmods.zip"
-          curl -L -o openjfx.zip $FX_URL
+          
+          # Téléchargement avec vérification de code de sortie
+          if ! curl -L -o openjfx.zip "$FX_URL"; then
+            echo "❌ Échec du téléchargement de JavaFX"
+            exit 1
+          fi
+          
+          # Vérification taille fichier (au moins 20MB)
+          MIN_SIZE=20000000
+          ACTUAL_SIZE=$(stat -f%z openjfx.zip)
+          if [ $ACTUAL_SIZE -lt $MIN_SIZE ]; then
+            echo "❌ Fichier trop petit (${ACTUAL_SIZE} octets), téléchargement corrompu"
+            exit 2
+          fi
+          
           unzip openjfx.zip
 
       - name: Import certificate and create keychain
