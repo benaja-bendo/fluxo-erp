@@ -31,14 +31,14 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          $env:FX_VERSION="17.0.14"
+          $env:FX_VERSION="21.0.7"
           $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION`_windows-x64_bin-jmods.zip"
           Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
           Expand-Archive -Path "openjfx.zip" -DestinationPath "."
 
       - name: Create Windows installer
         run: |
-          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-17.0.14"
+          $JMODS_PATH = Join-Path -Path $PWD -ChildPath "javafx-jmods-21.0.7"
           
           jpackage `
             --input target `
@@ -81,8 +81,8 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION="17.0.14"
-          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_osx-x64_bin-jmods.zip"
+          FX_VERSION="21.0.7"
+          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_macos-x64_bin-jmods.zip"
           curl -L -o openjfx.zip $FX_URL
           unzip openjfx.zip
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Create macOS installer
         run: |
-          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
+          JMODS_PATH="$(pwd)/javafx-jmods-21.0.7"
           
           SIGN_OPTIONS=""
           if [ -n "$MACOS_CERTIFICATE" ]; then
@@ -115,11 +115,9 @@ jobs:
                 --type dmg \
                 --icon src/main/resources/icons/mac/icon.icns \
                 --module-path "$JMODS_PATH" \
-                --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base \
+                --add-modules javafx.controls,javafx.fxml,javafx.graphics \
                 --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
                 --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
-                --java-options "-Dglass.platform=mac" \
-                --java-options "-Dprism.order=j2d" \
                 --mac-package-identifier "com.bgrfacile.fluxo" \
                 --mac-package-name "FluxoApp" \
                 $SIGN_OPTIONS \
@@ -150,14 +148,14 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION="17.0.14"
+          FX_VERSION="21.0.7"
           FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_linux-x64_bin-jmods.zip"
           wget $FX_URL -O openjfx.zip
           unzip openjfx.zip
 
       - name: Create Linux installer
         run: |
-          JMODS_PATH="$(pwd)/javafx-jmods-17.0.14"
+          JMODS_PATH="$(pwd)/javafx-jmods-21.0.7"
           
           jpackage \
             --input target \
