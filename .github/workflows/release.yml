@@ -31,11 +31,26 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          $env:FX_VERSION="21.0.7"
-          # Supprimer le backtick avant l'underscore
-          $env:FX_URL="https://download2.gluonhq.com/openjfx/$env:FX_VERSION/openjfx-$env:FX_VERSION_windows-x64_bin-jmods.zip"
-          Invoke-WebRequest -Uri $env:FX_URL -OutFile "openjfx.zip"
-          Expand-Archive -Path "openjfx.zip" -DestinationPath "."
+          # Définition explicite de la version
+          $fxVersion = "21.0.7"
+          
+          # Construction correcte de l’URL
+          $fxUrl = "https://download2.gluonhq.com/openjfx/$fxVersion/openjfx-${fxVersion}_windows-x64_bin-jmods.zip"
+          Write-Host "🔗 Téléchargement de $fxUrl"
+          
+          # Téléchargement
+          Invoke-WebRequest -Uri $fxUrl -OutFile openjfx.zip
+          
+          # Vérification de la taille (> 20 Mo)
+          $minSize = 20MB
+          $actualSize = (Get-Item openjfx.zip).Length
+          if ($actualSize -lt $minSize) {
+            Write-Error "❌ Fichier trop petit ($($actualSize) octets), téléchargement corrompu"
+            exit 2
+          }
+          
+          # Décompression
+          Expand-Archive -Path openjfx.zip -DestinationPath .
 
       - name: Create Windows installer
         run: |
@@ -82,24 +97,29 @@ jobs:
 
       - name: Setup JavaFX modules
         run: |
-          FX_VERSION="21.0.7"
-          FX_URL="https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_macos-x64_bin-jmods.zip"
-          
-          # Téléchargement avec vérification de code de sortie
-          if ! curl -L -o openjfx.zip "$FX_URL"; then
-            echo "❌ Échec du téléchargement de JavaFX"
-            exit 1
-          fi
-          
-          # Vérification taille fichier (au moins 20MB)
-          MIN_SIZE=20000000
-          ACTUAL_SIZE=$(stat -f%z openjfx.zip)
-          if [ $ACTUAL_SIZE -lt $MIN_SIZE ]; then
-            echo "❌ Fichier trop petit (${ACTUAL_SIZE} octets), téléchargement corrompu"
-            exit 2
-          fi
-          
-          unzip openjfx.zip
+          # 1) Définition de la version
+               FX_VERSION="21.0.7"
+          # 2) Construction correcte de l’URL
+               FX_URL="https://download2.gluonhq.com/openjfx/${FX_VERSION}/openjfx-${FX_VERSION}_osx-aarch64_bin-jmods.zip"
+               echo "🔗 Télécharger : $FX_URL"
+
+          # 3) Téléchargement avec curl et gestion d'erreur
+               if ! curl -L -f -o openjfx.zip "$FX_URL"; then
+                 echo "❌ Échec du téléchargement de JavaFX"
+                 exit 1
+               fi
+
+          # 4) Vérification de la taille (> 20 Mo)
+               MIN_SIZE=$((20 * 1024 * 1024))
+               ACTUAL_SIZE=$(stat -f%z openjfx.zip)
+               echo "ℹ️ Taille du ZIP : ${ACTUAL_SIZE} octets"
+               if [ "$ACTUAL_SIZE" -lt "$MIN_SIZE" ]; then
+                 echo "❌ Fichier trop petit (${ACTUAL_SIZE} octets), téléchargement corrompu"
+                 exit 2
+               fi
+
+          # 5) Extraction
+               unzip openjfx.zip
 
       - name: Import certificate and create keychain
         if: env.MACOS_CERTIFICATE != ''
