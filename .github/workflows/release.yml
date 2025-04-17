@@ -108,20 +108,22 @@ jobs:
             SIGN_OPTIONS="--mac-sign --mac-signing-key-user-name \"$MACOS_SIGNING_IDENTITY\""
           fi
           
-          jpackage \
-            --input target \
-            --name FluxoApp \
-            --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
-            --type dmg \
-            --icon src/main/resources/icons/mac/icon.icns \
-            --module-path "$JMODS_PATH" \
-            --add-modules javafx.controls,javafx.fxml \
-            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
-            --mac-package-identifier "com.bgrfacile.fluxo" \
-            --mac-package-name "FluxoApp" \
-            $SIGN_OPTIONS \
-            --dest installer/mac
+              jpackage \
+                --input target \
+                --name FluxoApp \
+                --main-jar Fluxo-0.0.1-SNAPSHOT.jar \
+                --type dmg \
+                --icon src/main/resources/icons/mac/icon.icns \
+                --module-path "$JMODS_PATH" \
+                --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base \
+                --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+                --java-options "--add-opens java.base/java.io=ALL-UNNAMED" \
+                --java-options "-Dglass.platform=mac" \
+                --java-options "-Dprism.order=j2d" \
+                --mac-package-identifier "com.bgrfacile.fluxo" \
+                --mac-package-name "FluxoApp" \
+                $SIGN_OPTIONS \
+                --dest installer/mac
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
